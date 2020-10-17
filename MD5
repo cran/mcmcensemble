@@ -1,0 +1,17 @@
+341c7b0b77949d6b331971a592eaec69 *DESCRIPTION
+23ccf03953716b727e4eec95b4287cca *NAMESPACE
+6dffced3e7e90013ef7e0fa117714635 *NEWS.md
+28de20233efa24c56f88d56b7fcf8516 *R/MCMCEnsemble.R
+5a2436fe6a4782d4b94f91bf9ee820ce *R/MCMCEnsembleSampler-package.R
+83b75a5b140fbb9ae445c3d9c7d92dac *R/d.e.mcmc.R
+545542fbe350f0807f1569f70c4bf2f9 *R/s.m.mcmc.R
+33bdc1720795eee7735a29e32346e074 *README.md
+d5a1a0aa189c8f0e3f033c3c8c7f8a3e *build/partial.rdb
+f9793199ca888f22c690a1ea133ea095 *man/MCMCEnsemble.Rd
+0724f101c1699f085ae6d911db29bb41 *man/d.e.mcmc.Rd
+4da670a6b2d943e54ed52150dc06790a *man/figures/README-unnamed-chunk-4-1.svg
+e85d4784dcd3b3b339cc30ece62bee94 *man/figures/README-unnamed-chunk-4-2.svg
+b24875fcd70e92ecb34171d95e541771 *man/mcmcensemble-package.Rd
+7d50348b7238627891f0c28249748996 *man/s.m.mcmc.Rd
+1495e1617d4670efb997b4dc2f4717f2 *tests/testthat.R
+69eea9edded2570e2630d38a80c2d993 *tests/testthat/test-MCMCEnsemble.R
