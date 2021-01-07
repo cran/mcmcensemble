@@ -18,6 +18,9 @@
 #' Communications in Applied Mathematics and Computational Science, 5(1), 65–80,
 #' \doi{10.2140/camcos.2010.5.65}
 #'
+#' @importFrom future.apply future_apply
+#' @importFrom progressr progressor
+#'
 s.m.mcmc <- function(f, lower.inits, upper.inits, max.iter, n.walkers, ...) {
 
   n.dim <- length(lower.inits)
@@ -25,55 +28,63 @@ s.m.mcmc <- function(f, lower.inits, upper.inits, max.iter, n.walkers, ...) {
 
   chain.length <- max.iter %/% n.walkers
 
-  log.p <- matrix(NA_real_, nrow = n.walkers, ncol = chain.length)
-  log.p.old <- rep(NA_real_, n.walkers)
-  ensemble.old <- matrix(NA_real_, nrow = n.walkers, ncol = n.dim)
-  ensemble.new <- matrix(NA_real_, nrow = n.walkers, ncol = n.dim)
-  samples <- array(NA_real_, dim = c(n.walkers, chain.length, n.dim))
+  p <- progressor(chain.length)
 
-  ensemble.old[1, ] <- runif(n.dim, lower.inits, upper.inits)
-  logres <- f(ensemble.old[1, ], ...)
-  if (length(logres) != 1 || !is.numeric(logres)) {
+  ensemble.old <- matrix(
+    runif(n.dim*n.walkers, lower.inits, upper.inits),
+    nrow = n.walkers,
+    ncol = n.dim,
+    byrow = TRUE
+  )
+
+  log.p.old <- future_apply(ensemble.old, 1, f, ..., future.seed = TRUE)
+
+  if (!is.vector(log.p.old, mode = "numeric")) {
     stop("Function 'f' should return a numeric of length 1", call. = FALSE)
   }
-  log.p.old[1] <- logres
 
-  for (k in 2:n.walkers) {
-    ensemble.old[k, ] <- runif(n.dim, lower.inits, upper.inits)
-    log.p.old[k] <- f(ensemble.old[k, ], ...)
-  }
+  log.p <- matrix(NA_real_, nrow = n.walkers, ncol = chain.length)
+  samples <- array(NA_real_, dim = c(n.walkers, chain.length, n.dim))
 
   log.p[, 1] <- log.p.old
   samples[, 1, ] <- ensemble.old
 
+  p()
+
   ## the loop
 
   for (l in 2:chain.length) {
-    for (n in 1:n.walkers) {
-      z <- ((runif(1) + 1)^2) / 2
-      a <- sample((1:n.walkers)[-n], 1)
-      par.active <- ensemble.old[a, ]
 
-      ensemble.new[n, ] <- par.active + z * (ensemble.old[n, ] - par.active)
+    z <- ((runif(n.walkers) + 1)^2) / 2
 
-      log.p.new <- f(ensemble.new[n, ], ...)
-      if (!is.finite(log.p.new)) {
-        acc <- 0
-      }
-      else {
-        acc <- z^(n.dim - 1) * exp(log.p.new - log.p.old[n])
-      }
+    a <- vapply(
+      seq_len(n.walkers),
+      function(n) sample((1:n.walkers)[-n], 1),
+      integer(1)
+    )
 
-      if (acc > runif(1)) {
-        ensemble.old[n, ] <- ensemble.new[n, ]
-        log.p.old[n] <- log.p.new
-      }
-      samples[n, l, ] <- ensemble.old[n, ]
-      log.p[n, l] <- log.p.old[n]
-    }
+    par.active <- ensemble.old[a, ]
+
+    ensemble.new <- par.active + z * (ensemble.old - par.active)
+
+    log.p.new <- future_apply(ensemble.new, 1, f, ..., future.seed = TRUE)
+
+    val <- z^(n.dim - 1) * exp(log.p.new - log.p.old)
+
+    # We don't want to get rid of Inf values since +Inf is a valid value to
+    # accept a change. If we forbid, we are actually forbidding large log.p
+    # changes.
+    acc <- !is.na(val) & val > runif(n.walkers)
+
+    ensemble.old[acc, ] <- ensemble.new[acc, ]
+    log.p.old[acc] <- log.p.new[acc]
+
+    samples[, l, ] <- ensemble.old
+    log.p[, l] <- log.p.old
+
+    p()
   }
 
-  mcmc.list <- list(samples = samples, log.p = log.p)
+  return(list(samples = samples, log.p = log.p))
 
-  return(mcmc.list)
 }

@@ -1,3 +1,22 @@
+# mcmcensemble 2.1
+
+## Major changes
+
+* the ensemble sampling can now be parallelized with the future framework. Check
+the [README](https://bisaloo.github.io/mcmcensemble/) for more information
+
+## Other user-facing changes
+
+* very large log.p differences between chains do not cause them to be
+stuck any more
+* addition of a new vignette listing frequently asked questions (with their
+answer)
+
+## Dev changes
+
+* new test to make sure the chains converge as expected
+* performance improvements
+
 # mcmcensemble 2.0
 
 ## Breaking changes

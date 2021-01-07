@@ -1,7 +1,7 @@
 #' MCMC Ensemble sampler with the differential evolution jump move
 #'
 #' Markov Chain Monte Carlo sampler: using the differential evolution jump move
-#' (implementation of the Ter Braak differential evolution)
+#' (implementation of the ter Braak differential evolution)
 #'
 #' @inheritParams MCMCEnsemble
 #'
@@ -19,7 +19,9 @@
 #' ter Braak, C. J. F. and Vrugt, J. A. (2008) Differential Evolution Markov
 #' Chain with snooker updater and fewer chains. Statistics and Computing,
 #' 18(4), 435–446, \doi{10.1007/s11222-008-9104-9}
-#' .
+#'
+#' @importFrom future.apply future_apply
+#'
 d.e.mcmc <- function(f, lower.inits, upper.inits, max.iter, n.walkers, ...) {
 
   n.dim <- length(lower.inits)
@@ -27,62 +29,68 @@ d.e.mcmc <- function(f, lower.inits, upper.inits, max.iter, n.walkers, ...) {
 
   chain.length <- max.iter %/% n.walkers
 
-  log.p <- matrix(NA_real_, nrow = n.walkers, ncol = chain.length)
-  log.p.old <- rep(NA_real_, n.walkers)
-  ensemble.old <- matrix(NA_real_, nrow = n.walkers, ncol = n.dim)
-  ensemble.new <- matrix(NA_real_, nrow = n.walkers, ncol = n.dim)
-  samples <- array(NA_real_, dim = c(n.walkers, chain.length, n.dim))
+  p <- progressor(chain.length)
 
-  ensemble.old[1, ] <- runif(n.dim, lower.inits, upper.inits)
-  logres <- f(ensemble.old[1, ], ...)
-  if (length(logres) != 1 || !is.numeric(logres)) {
+  ensemble.old <- matrix(
+    runif(n.dim*n.walkers, lower.inits, upper.inits),
+    nrow = n.walkers,
+    ncol = n.dim,
+    byrow = TRUE
+  )
+
+  log.p.old <- future_apply(ensemble.old, 1, f, ..., future.seed = TRUE)
+
+  if (!is.vector(log.p.old, mode = "numeric")) {
     stop("Function 'f' should return a numeric of length 1", call. = FALSE)
   }
-  log.p.old[1] <- logres
 
-  for (k in 2:n.walkers) {
-    ensemble.old[k, ] <- runif(n.dim, lower.inits, upper.inits)
-    log.p.old[k] <- f(ensemble.old[k, ], ...)
-  }
+  log.p <- matrix(NA_real_, nrow = n.walkers, ncol = chain.length)
+  samples <- array(NA_real_, dim = c(n.walkers, chain.length, n.dim))
 
   log.p[, 1] <- log.p.old
   samples[, 1, ] <- ensemble.old
 
+  p()
+
   ## the loop
 
   for (l in 2:chain.length) {
-    for (n in 1:n.walkers) {
-      z <- 2.38 / sqrt(2 * n.dim)
-      if (l %% 10 == 0) {
-        z <- 1
-      }
 
-      a <- sample((1:n.walkers)[-n], 1)
-      b <- sample((1:n.walkers)[-c(n, a)], 1)
-
-      par.active.1 <- ensemble.old[a, ]
-      par.active.2 <- ensemble.old[b, ]
-
-      ensemble.new[n, ] <- ensemble.old[n, ] + z * (par.active.1 - par.active.2)
-
-      log.p.new <- f(ensemble.new[n, ], ...)
-      if (!is.finite(log.p.new)) {
-        acc <- 0
-      }
-      else {
-        acc <- exp(log.p.new - log.p.old[n])
-      }
-
-      if (acc > runif(1)) {
-        ensemble.old[n, ] <- ensemble.new[n, ]
-        log.p.old[n] <- log.p.new
-      }
-      samples[n, l, ] <- ensemble.old[n, ]
-      log.p[n, l] <- log.p.old[n]
+    z <- 2.38 / sqrt(2 * n.dim)
+    if (l %% 10 == 0) {
+      z <- 1
     }
+
+    s <- vapply(
+      seq_len(n.walkers),
+      function(n) sample((1:n.walkers)[-n], 2, replace = FALSE),
+      integer(2)
+    )
+
+    par.active.1 <- ensemble.old[s[1, ], ]
+    par.active.2 <- ensemble.old[s[2, ], ]
+
+    ensemble.new <- ensemble.old + z * (par.active.1 - par.active.2)
+
+    log.p.new <- future_apply(ensemble.new, 1, f, ..., future.seed = TRUE)
+
+    val <- exp(log.p.new - log.p.old)
+
+    # We don't want to get rid of Inf values since +Inf is a valid value to
+    # accept a change. If we forbid, we are actually forbidding large log.p
+    # changes.
+    acc <- !is.na(val) & val > runif(n.walkers)
+
+    ensemble.old[acc, ] <- ensemble.new[acc, ]
+    log.p.old[acc] <- log.p.new[acc]
+
+    samples[, l, ] <- ensemble.old
+    log.p[, l] <- log.p.old
+
+    p()
+
   }
 
-  mcmc.list <- list(samples = samples, log.p = log.p)
+  return(list(samples = samples, log.p = log.p))
 
-  return(mcmc.list)
 }

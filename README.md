@@ -5,10 +5,14 @@
 
 <!-- badges: start -->
 
+[![CRAN
+status](https://www.r-pkg.org/badges/version-ago/mcmcensemble)](https://CRAN.R-project.org/package=mcmcensemble)
 [![R build
 status](https://github.com/Bisaloo/mcmcensemble/workflows/R-CMD-check/badge.svg)](https://github.com/Bisaloo/mcmcensemble/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/Bisaloo/mcmcensemble/branch/master/graph/badge.svg)](https://codecov.io/gh/Bisaloo/mcmcensemble?branch=master)
+[![Lifecycle:
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://www.tidyverse.org/lifecycle/#stable)
 <!-- badges: end -->
 
 This R package provides ensemble samplers for affine-invariant Monte
@@ -19,7 +23,21 @@ estimation problems. Two samplers are proposed: the
 sampler from [Goodman and Weare
 (2010)](https://doi.org/10.2140/camcos.2010.5.65).
 
+For theoretical background about Ensemble MCMC (what are the benefits
+over simple MCMC? How do they work? What are the pitfalls?), please
+refer for example to [this
+lecture](https://astrostatistics.psu.edu/su14/lectures/HierarchicalBayesianModelingEnsembleMCMC.pdf)
+from Eric B. Ford (Penn State).
+
 ## Installation
+
+You can install the stable version of this package from CRAN:
+
+``` r
+install.packages("mcmcensemble")
+```
+
+or the development version from GitHub:
 
 ``` r
 # install.packages("remotes")
@@ -76,22 +94,21 @@ summary(res2$samples)
 #> 1. Empirical mean and standard deviation for each variable,
 #>    plus standard error of the mean:
 #> 
-#>       Mean    SD Naive SE Time-series SE
-#> a -0.99617 9.404  0.17169         1.1082
-#> b  0.08097 3.802  0.06941         0.5324
+#>      Mean     SD Naive SE Time-series SE
+#> a  2.5369 10.520  0.19206         1.2490
+#> b -0.5984  4.575  0.08352         0.7117
 #> 
 #> 2. Quantiles for each variable:
 #> 
-#>     2.5%     25%     50%   75% 97.5%
-#> a -20.18 -6.6065 0.01745 5.148 17.65
-#> b -10.22 -0.9395 1.25350 2.573  4.29
+#>     2.5%    25%   50%   75%  97.5%
+#> a -17.10 -4.510 1.784 8.983 23.321
+#> b -13.12 -2.091 1.080 2.633  4.066
 plot(res2$samples)
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.svg" width="100%" />
+<img src="man/figures/README-example-stretch-1.svg" width="100%" />
 
 ``` r
-
 ## use different evolution move, return samples as 'coda' object
 res3 <- MCMCEnsemble(p.log, lower.inits=c(a=0, b=0), upper.inits=c(a=1, b=1),
                      max.iter=3000, n.walkers=10, 
@@ -108,19 +125,32 @@ summary(res3$samples)
 #> 1. Empirical mean and standard deviation for each variable,
 #>    plus standard error of the mean:
 #> 
-#>      Mean    SD Naive SE Time-series SE
-#> a -0.6493 8.119  0.14824          0.631
-#> b  1.0218 2.408  0.04397          0.218
+#>     Mean    SD Naive SE Time-series SE
+#> a 0.8694 8.912  0.16270         0.8364
+#> b 0.5526 3.038  0.05547         0.3271
 #> 
 #> 2. Quantiles for each variable:
 #> 
-#>      2.5%      25%    50%   75%  97.5%
-#> a -14.947 -6.59386 -1.001 5.112 16.622
-#> b  -5.064 -0.08247  1.645 2.747  4.148
+#>      2.5%     25%    50%   75%  97.5%
+#> a -16.052 -5.9044 0.4582 7.608 18.078
+#> b  -8.126 -0.8741 1.4248 2.607  4.136
 plot(res3$samples)
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-2.svg" width="100%" />
+<img src="man/figures/README-example-de-1.svg" width="100%" />
+
+## Parallel processing
+
+This package is set up to allow transparent parallel processing when
+requested by the user thanks to the framework provided by the
+[future](https://cran.r-project.org/package=future) package. To enable
+parallel processing, you must run:
+
+``` r
+future::plan("multiprocess")
+```
+
+at the start of your session.
 
 ## Similar projects
 
@@ -129,3 +159,8 @@ in other languages:
 
   - emcee in Python (<https://doi.org/10.21105/joss.01864>)
   - gwmcmc in Matlab (<https://github.com/grinsted/gwmcmc>)
+
+## Who is talking about this package?
+
+  - [R View from
+    October 2020](https://rviews.rstudio.com/2020/11/19/october-2020-top-40-new-cran-packages/)

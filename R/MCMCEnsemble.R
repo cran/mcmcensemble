@@ -39,13 +39,13 @@
 #'
 #' ## use stretch move
 #' res1 <- MCMCEnsemble(p.log, lower.inits=c(a=0, b=0), upper.inits=c(a=1, b=1),
-#'                      max.iter=3000, n.walkers=10, method="stretch")
+#'                      max.iter=300, n.walkers=10, method="stretch")
 #' str(res1)
 #'
 #'
 #' ## use stretch move, return samples as 'coda' object
 #' res2 <- MCMCEnsemble(p.log, lower.inits=c(a=0, b=0), upper.inits=c(a=1, b=1),
-#'                      max.iter=3000, n.walkers=10, method="stretch",
+#'                      max.iter=300, n.walkers=10, method="stretch",
 #'                      coda=TRUE)
 #'
 #' summary(res2$samples)
@@ -54,7 +54,7 @@
 #'
 #' ## use different evolution move, return samples as 'coda' object
 #' res3 <- MCMCEnsemble(p.log, lower.inits=c(a=0, b=0), upper.inits=c(a=1, b=1),
-#'                      max.iter=3000, n.walkers=10,
+#'                      max.iter=300, n.walkers=10,
 #'                      method="differential.evolution", coda=TRUE)
 #'
 #' summary(res3$samples)
@@ -66,7 +66,7 @@
 #' - ter Braak, C. J. F. and Vrugt, J. A. (2008) Differential Evolution Markov
 #' Chain with snooker updater and fewer chains. Statistics and Computing, 18(4),
 #' 435–446, \doi{10.1007/s11222-008-9104-9}
-#' -  Goodman, J. and Weare, J. (2010) Ensemble samplers with affine invariance.
+#' - Goodman, J. and Weare, J. (2010) Ensemble samplers with affine invariance.
 #' Communications in Applied Mathematics and Computational Science, 5(1), 65–80,
 #' \doi{10.2140/camcos.2010.5.65}
 #'
@@ -113,8 +113,10 @@ MCMCEnsemble <- function(f, lower.inits, upper.inits,
   if (coda) {
 
     if (!requireNamespace("coda", quietly = TRUE)) {
-      stop("Package \"coda\" needed for projection plots. Please install it.",
-           call. = FALSE
+      stop(
+        "Package 'coda' needed for to create coda objects. ",
+        "Please install it or use `coda = TRUE`.",
+        call. = FALSE
       )
     }
 

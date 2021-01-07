@@ -31,13 +31,12 @@ List containing:
 }
 \description{
 Markov Chain Monte Carlo sampler: using the differential evolution jump move
-(implementation of the Ter Braak differential evolution)
+(implementation of the ter Braak differential evolution)
 }
 \references{
 ter Braak, C. J. F. and Vrugt, J. A. (2008) Differential Evolution Markov
 Chain with snooker updater and fewer chains. Statistics and Computing,
 18(4), 435–446, \doi{10.1007/s11222-008-9104-9}
-.
 }
 \author{
 Sanda Dejanic
