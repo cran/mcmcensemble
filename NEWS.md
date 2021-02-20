@@ -1,8 +1,31 @@
+# mcmcensemble 2.2
+
+## Major changes
+
+* it is now possible to use a named vector as first argument of the function
+passed in `f`. This is useful if you do something like:
+
+```
+p.log.named <- function(x) {
+  B <- 0.03
+  return(-x["a"]^2/200 - 1/2*(x["b"]+B*x["a"]^2-100*B)^2)
+}
+```
+* mcmcensemble now explicitly depends on R >= 3.5.0. This was already implicitly
+the case since 2.1 because of the dependency on the progressr package.
+* the ensemble sampling algorithm used by `MCMCEnsemble()` is now recorded in
+an additional attribute (accessible via `attr(res, "ensemble.sampler")`).
+
+## Other user-facing changes
+
+* there is now an additional argument check ensuring that `lower.inits` and 
+`upper.inits` have the same names
+
 # mcmcensemble 2.1
 
 ## Major changes
 
-* the ensemble sampling can now be parallelized with the future framework. Check
+* the ensemble sampling can now be parallelised with the future framework. Check
 the [README](https://bisaloo.github.io/mcmcensemble/) for more information
 
 ## Other user-facing changes

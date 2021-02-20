@@ -14,21 +14,26 @@
 #' @param max.iter maximum number of function evaluations
 #' @param n.walkers number of walkers (ensemble size)
 #' @param method method for proposal generation, either `"stretch"`, or
-#'   `"differential.evolution"`.
+#'   `"differential.evolution"`. This argument will be saved as an attribute
+#'   in the output (see examples).
 #' @param coda logical. Should the samples be returned as [coda::mcmc.list]
 #'   object? (defaults to `FALSE`)
 #' @param ... further arguments passed to `f`
 #'
 #' @return
 #' * if `coda = FALSE` a list with:
-#' - *samples*: A three dimensional array of samples with dimensions `walker` x
-#' `generation` x `parameter`
-#' - *log.p*: A matrix with the log density evaluate for each walker at each
-#' generation.
+#'   - *samples*: A three dimensional array of samples with dimensions `walker`
+#'     x `generation` x `parameter`
+#'   - *log.p*: A matrix with the log density evaluate for each walker at each
+#'      generation.
 #' * if `coda = TRUE` a list with:
-#' - *samples*: A object of class [coda::mcmc.list] containing all samples.
-#' - *log.p*: A matrix with the log density evaluate for each walker at each
-#' generation.
+#'   - *samples*: A object of class [coda::mcmc.list] containing all samples.
+#'   - *log.p*: A matrix with the log density evaluate for each walker at each
+#'     generation.
+#'
+#' In both cases, there is an additional attribute (accessible via
+#' `attr(res, "ensemble.sampler")`) recording which ensemble sampling algorithm
+#' was used.
 #'
 #' @examples
 #' ## a log-pdf to sample from
@@ -40,6 +45,9 @@
 #' ## use stretch move
 #' res1 <- MCMCEnsemble(p.log, lower.inits=c(a=0, b=0), upper.inits=c(a=1, b=1),
 #'                      max.iter=300, n.walkers=10, method="stretch")
+#'
+#' attr(res1, "ensemble.sampler")
+#'
 #' str(res1)
 #'
 #'
@@ -47,6 +55,8 @@
 #' res2 <- MCMCEnsemble(p.log, lower.inits=c(a=0, b=0), upper.inits=c(a=1, b=1),
 #'                      max.iter=300, n.walkers=10, method="stretch",
 #'                      coda=TRUE)
+#'
+#' attr(res2, "ensemble.sampler")
 #'
 #' summary(res2$samples)
 #' plot(res2$samples)
@@ -56,6 +66,8 @@
 #' res3 <- MCMCEnsemble(p.log, lower.inits=c(a=0, b=0), upper.inits=c(a=1, b=1),
 #'                      max.iter=300, n.walkers=10,
 #'                      method="differential.evolution", coda=TRUE)
+#'
+#' attr(res3, "ensemble.sampler")
 #'
 #' summary(res3$samples)
 #' plot(res3$samples)
@@ -74,12 +86,14 @@ MCMCEnsemble <- function(f, lower.inits, upper.inits,
                          max.iter, n.walkers = 10 * length(lower.inits),
                          method = c("stretch", "differential.evolution"),
                          coda = FALSE, ...) {
-  if (length(lower.inits) != length(upper.inits)) {
-    stop("The length of 'lower.inits' and 'lower.inits' is must be identical!")
-  }
 
-  n.dim <- length(lower.inits)
-  init.range <- cbind(lower.inits, upper.inits)
+  if (length(lower.inits) != length(upper.inits) ||
+      isTRUE(names(lower.inits) != names(upper.inits))) {
+    stop(
+      "The length and names of 'lower.inits' and 'lower.inits' is must be
+      identical!", call. = FALSE
+    )
+  }
 
   ## run mcmc
   method <- match.arg(method)
@@ -94,7 +108,7 @@ MCMCEnsemble <- function(f, lower.inits, upper.inits,
 
   ## add names
   if (is.null(names(lower.inits))) {
-    pnames <- paste0("para_", 1:n.dim)
+    pnames <- paste0("para_", seq_along(lower.inits))
   } else {
     pnames <- names(lower.inits)
   }
@@ -125,5 +139,7 @@ MCMCEnsemble <- function(f, lower.inits, upper.inits,
     res <- list(samples = coda::as.mcmc.list(ll), log.p = res$log.p)
   }
 
-  res
+  attr(res, "ensemble.sampler") <- method
+
+  return(res)
 }
