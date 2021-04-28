@@ -1,11 +1,34 @@
-# mcmcensemble 2.2
+# mcmcensemble 3.0.0
+
+## Major changes
+
+* the arguments `lower.inits` and `upper.inits` are deprecated in favour of
+`inits` which leave more flexibility to the user. Please read the detailed
+blog post for more background about this change and how to migrate.
+* `inits` can now be a `data.frame` or a `matrix`
+* `d.e.mcmc()` and `s.m.mcmc()` are not exported any more. Please use the
+wrapper `MCMCEnsemble()` instead.
+* there is a new vignette 
+(`vignette("diagnostic-pkgs", package = "mcmcensemble")`) presenting two 
+different options (coda and bayesplot) to plot and evaluate the MCMC chains 
+produced by mcmcensemble.
+
+## Bug fixes
+
+* The chains now run fine even in the case where there is only one iteration 
+(i.e., `max.iter %/% n.walkers == 1`)
+* The error message when the coda package is absent and `coda = TRUE` now 
+correctly prompt the user to use `coda = FALSE` if they do not wish to install 
+coda.
+
+# mcmcensemble 2.2.0
 
 ## Major changes
 
 * it is now possible to use a named vector as first argument of the function
 passed in `f`. This is useful if you do something like:
 
-```
+```r
 p.log.named <- function(x) {
   B <- 0.03
   return(-x["a"]^2/200 - 1/2*(x["b"]+B*x["a"]^2-100*B)^2)

@@ -14,11 +14,16 @@ p.log <- function(x) {
   -x[1]^2 / 200 - 1 / 2 * (x[2] + B * x[1]^2 - 100 * B)^2
 }
 
+unif_inits <- data.frame(
+  a = runif(10, min = -10, max = -5),
+  b = runif(10, min = -10, max = -5)
+)
+
 set.seed(20201209)
 
 res1 <- MCMCEnsemble(
   p.log,
-  lower.inits = c(a = -10, b = -10), upper.inits = c(a = -5, b = -5),
+  inits = unif_inits,
   max.iter = 3000, n.walkers = 10,
   method = "stretch",
   coda = TRUE
@@ -32,7 +37,7 @@ summary(res1$samples)
 ## -----------------------------------------------------------------------------
 res2 <- MCMCEnsemble(
   p.log,
-  lower.inits = c(a = -10, b = -10), upper.inits = c(a = -5, b = -5),
+  inits = unif_inits,
   max.iter = 3000, n.walkers = 10,
   method = "differential.evolution",
   coda = TRUE
@@ -54,10 +59,41 @@ p.log.restricted <- function(x) {
   -x[1]^2 / 200 - 1 / 2 * (x[2] + B * x[1]^2 - 100 * B)^2
 }
 
+unif_inits <- data.frame(
+  a = runif(10, min = 0, max = 1),
+  b = runif(10, min = 0, max = 1)
+)
+
 res <- MCMCEnsemble(
   p.log.restricted,
-  lower.inits = c(a = 0, b = 0), upper.inits = c(a = 1, b = 1),
+  inits = unif_inits,
   max.iter = 3000, n.walkers = 10,
+  method = "stretch",
+  coda = TRUE
+)
+summary(res$samples)
+
+## ---- eval = identical(Sys.getenv("IN_PKGDOWN"), "true")----------------------
+#  plot(res$samples)
+
+## -----------------------------------------------------------------------------
+prior.log <- function(x) {
+ dunif(x, log = TRUE)
+}
+
+lkl.log <- function(x) {
+  B <- 0.03 # controls 'bananacity'
+  -x[1]^2 / 200 - 1 / 2 * (x[2] + B * x[1]^2 - 100 * B)^2
+}
+
+posterior.log <- function(x) {
+  sum(prior.log(x)) + lkl.log(x)
+}
+
+res <- MCMCEnsemble(
+  posterior.log,
+  inits = unif_inits,
+  max.iter = 5000, n.walkers = 10,
   method = "stretch",
   coda = TRUE
 )
