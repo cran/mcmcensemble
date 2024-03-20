@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -36,7 +36,7 @@ class(res$samples)
 ## -----------------------------------------------------------------------------
 summary(res$samples)
 
-## ---- eval = identical(Sys.getenv("IN_PKGDOWN"), "true")----------------------
+## ----eval = identical(Sys.getenv("IN_PKGDOWN"), "true")-----------------------
 #  plot(res$samples)
 
 ## -----------------------------------------------------------------------------
@@ -58,7 +58,7 @@ res_coda <- MCMCEnsemble(
   max.iter = 3000, n.walkers = 10, method = "stretch", coda = TRUE
 )
 
-## ---- out.width='45%', fig.show='hold'----------------------------------------
+## ----out.width='45%', fig.show='hold'-----------------------------------------
 # Density of log-posterior of each parameter
 mcmc_areas(res_nocoda$samples)
 mcmc_areas(res_coda$samples)

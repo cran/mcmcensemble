@@ -10,7 +10,8 @@
 #' @param inits A matrix (or data.frame) containing the starting values for the
 #'   walkers. Each column is a variable to estimate and each row is a walker
 #' @param max.iter maximum number of function evaluations
-#' @param n.walkers number of walkers (ensemble size)
+#' @param n.walkers number of walkers (ensemble size). An integer greater or
+#'   equal than 2.
 #' @param method method for proposal generation, either `"stretch"`, or
 #'   `"differential.evolution"`. This argument will be saved as an attribute
 #'   in the output (see examples).
@@ -95,6 +96,10 @@ MCMCEnsemble <- function(f, inits, max.iter, n.walkers = 10 * ncol(inits),
 
   if (is.data.frame(inits) || inherits(inits, "tbl_df")) {
     inits <- as.matrix(inits)
+  }
+
+  if (n.walkers < 2) {
+    stop("The number of walkers must be at least 2", call. = FALSE)
   }
 
   if (nrow(inits) != n.walkers) {

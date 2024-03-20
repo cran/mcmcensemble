@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -7,7 +7,7 @@ knitr::opts_chunk$set(
 ## ----setup--------------------------------------------------------------------
 library(mcmcensemble)
 
-## ---- eval = require("coda")--------------------------------------------------
+## ----eval = require("coda")---------------------------------------------------
 ## a log-pdf to sample from
 p.log <- function(x) {
   B <- 0.03 # controls 'bananacity'
@@ -31,7 +31,7 @@ res1 <- MCMCEnsemble(
 
 summary(res1$samples)
 
-## ---- eval = identical(Sys.getenv("IN_PKGDOWN"), "true")----------------------
+## ----eval = identical(Sys.getenv("IN_PKGDOWN"), "true")-----------------------
 #  plot(res1$samples)
 
 ## -----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ res2 <- MCMCEnsemble(
 
 summary(res2$samples)
 
-## ---- eval = identical(Sys.getenv("IN_PKGDOWN"), "true")----------------------
+## ----eval = identical(Sys.getenv("IN_PKGDOWN"), "true")-----------------------
 #  plot(res2$samples)
 
 ## -----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ res <- MCMCEnsemble(
 )
 summary(res$samples)
 
-## ---- eval = identical(Sys.getenv("IN_PKGDOWN"), "true")----------------------
+## ----eval = identical(Sys.getenv("IN_PKGDOWN"), "true")-----------------------
 #  plot(res$samples)
 
 ## -----------------------------------------------------------------------------
@@ -99,6 +99,6 @@ res <- MCMCEnsemble(
 )
 summary(res$samples)
 
-## ---- eval = identical(Sys.getenv("IN_PKGDOWN"), "true")----------------------
+## ----eval = identical(Sys.getenv("IN_PKGDOWN"), "true")-----------------------
 #  plot(res$samples)
 
