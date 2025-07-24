@@ -1,3 +1,16 @@
+# mcmcensemble 3.2.0
+
+## Bug fixes
+
+* a bug resulting in weak correlation across walkers has been resolved (#9, @scheidan). Runs from this version will therefore produce results different than with previous versions, even for a given seed.
+
+## Minor improvements
+
+Two changes ensure chains don't get stuck in a loop:
+
+* an early parameter check ensures that sufficient walkers are provided (via the `n.walkers` argument) to ensure ergodicity (#11, @scheidan)
+* noise has been added to each step of the differential evolution algorithm to ensure we don't end up walking on a grid (#12, @scheidan)
+
 # mcmcensemble 3.1.0
 
 ## Minor improvements
@@ -16,17 +29,17 @@ blog post for more background about this change and how to migrate.
 * `inits` can now be a `data.frame` or a `matrix`
 * `d.e.mcmc()` and `s.m.mcmc()` are not exported any more. Please use the
 wrapper `MCMCEnsemble()` instead.
-* there is a new vignette 
-(`vignette("diagnostic-pkgs", package = "mcmcensemble")`) presenting two 
-different options (coda and bayesplot) to plot and evaluate the MCMC chains 
+* there is a new vignette
+(`vignette("diagnostic-pkgs", package = "mcmcensemble")`) presenting two
+different options (coda and bayesplot) to plot and evaluate the MCMC chains
 produced by mcmcensemble.
 
 ## Bug fixes
 
-* The chains now run fine even in the case where there is only one iteration 
+* The chains now run fine even in the case where there is only one iteration
 (i.e., `max.iter %/% n.walkers == 1`)
-* The error message when the coda package is absent and `coda = TRUE` now 
-correctly prompt the user to use `coda = FALSE` if they do not wish to install 
+* The error message when the coda package is absent and `coda = TRUE` now
+correctly prompt the user to use `coda = FALSE` if they do not wish to install
 coda.
 
 # mcmcensemble 2.2.0
@@ -49,7 +62,7 @@ an additional attribute (accessible via `attr(res, "ensemble.sampler")`).
 
 ## Other user-facing changes
 
-* there is now an additional argument check ensuring that `lower.inits` and 
+* there is now an additional argument check ensuring that `lower.inits` and
 `upper.inits` have the same names
 
 # mcmcensemble 2.1

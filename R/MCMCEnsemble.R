@@ -10,8 +10,9 @@
 #' @param inits A matrix (or data.frame) containing the starting values for the
 #'   walkers. Each column is a variable to estimate and each row is a walker
 #' @param max.iter maximum number of function evaluations
-#' @param n.walkers number of walkers (ensemble size). An integer greater or
-#'   equal than 2.
+#' @param n.walkers number of walkers (ensemble size). An integer greater than
+#'  `max(3, d+1)` for stretch move and greater than `max(4, d+2)` for
+#'  differential evolution where `d == ncol(inits)`.
 #' @param method method for proposal generation, either `"stretch"`, or
 #'   `"differential.evolution"`. This argument will be saved as an attribute
 #'   in the output (see examples).
@@ -51,7 +52,7 @@
 #'
 #' ## use stretch move
 #' res1 <- MCMCEnsemble(p.log, inits = unif_inits,
-#'                      max.iter = 300, n.walkers = n_walkers,
+#'                      max.iter = 150, n.walkers = n_walkers,
 #'                      method = "stretch")
 #'
 #' attr(res1, "ensemble.sampler")
@@ -61,7 +62,7 @@
 #'
 #' ## use stretch move, return samples as 'coda' object
 #' res2 <- MCMCEnsemble(p.log, inits = unif_inits,
-#'                      max.iter = 300, n.walkers = n_walkers,
+#'                      max.iter = 150, n.walkers = n_walkers,
 #'                      method = "stretch", coda = TRUE)
 #'
 #' attr(res2, "ensemble.sampler")
@@ -72,7 +73,7 @@
 #'
 #' ## use different evolution move, return samples as 'coda' object
 #' res3 <- MCMCEnsemble(p.log, inits = unif_inits,
-#'                      max.iter = 300, n.walkers = n_walkers,
+#'                      max.iter = 150, n.walkers = n_walkers,
 #'                      method = "differential.evolution", coda = TRUE)
 #'
 #' attr(res3, "ensemble.sampler")
@@ -90,16 +91,32 @@
 #' Communications in Applied Mathematics and Computational Science, 5(1), 65–80,
 #' \doi{10.2140/camcos.2010.5.65}
 #'
-MCMCEnsemble <- function(f, inits, max.iter, n.walkers = 10 * ncol(inits),
-                         method = c("stretch", "differential.evolution"),
-                         coda = FALSE, ...) {
+MCMCEnsemble <- function(
+  f,
+  inits,
+  max.iter,
+  n.walkers = 10 * ncol(inits),
+  method = c("stretch", "differential.evolution"),
+  coda = FALSE,
+  ...
+) {
+  method <- match.arg(method)
+  inits <- as.matrix(inits)
 
-  if (is.data.frame(inits) || inherits(inits, "tbl_df")) {
-    inits <- as.matrix(inits)
+  dims <- ncol(inits)
+  if (method == "stretch" && n.walkers < max(3, dims + 1)) {
+    stop(
+      "The number of walkers must be at least `max(3, d+1)` ",
+      "where `d` is the number of parameters.",
+      call. = FALSE
+    )
   }
-
-  if (n.walkers < 2) {
-    stop("The number of walkers must be at least 2", call. = FALSE)
+  if (method == "differential.evolution" && n.walkers < max(4, dims + 2)) {
+    stop(
+      "The number of walkers must be at least `max(4, d+2)` ",
+      "where `d` is the number of parameters.",
+      call. = FALSE
+    )
   }
 
   if (nrow(inits) != n.walkers) {
@@ -110,7 +127,6 @@ MCMCEnsemble <- function(f, inits, max.iter, n.walkers = 10 * ncol(inits),
   }
 
   ## run mcmc
-  method <- match.arg(method)
   message("Using ", method, " move with ", n.walkers, " walkers.")
 
   if (method == "differential.evolution") {
@@ -121,15 +137,10 @@ MCMCEnsemble <- function(f, inits, max.iter, n.walkers = 10 * ncol(inits),
   }
 
   ## add names
-  if (is.null(colnames(inits))) {
-    pnames <- paste0("para_", seq_len(ncol(inits)))
-  } else {
-    pnames <- colnames(inits)
-  }
   dimnames(res$samples) <- list(
     paste0("walker_", seq_len(n.walkers)),
     paste0("generation_", seq_len(ncol(res$samples))),
-    pnames
+    colnames(inits) %||% paste0("para_", seq_len(ncol(inits)))
   )
 
   dimnames(res$log.p) <- list(
@@ -139,7 +150,6 @@ MCMCEnsemble <- function(f, inits, max.iter, n.walkers = 10 * ncol(inits),
 
   ## convert to coda object
   if (coda) {
-
     if (!requireNamespace("coda", quietly = TRUE)) {
       stop(
         "Package 'coda' needed for to create coda objects. ",
@@ -148,8 +158,9 @@ MCMCEnsemble <- function(f, inits, max.iter, n.walkers = 10 * ncol(inits),
       )
     }
 
-    ll <- lapply(seq_len(n.walkers),
-                 function(w) coda::as.mcmc(res$samples[w, , ]))
+    ll <- lapply(seq_len(n.walkers), function(w) {
+      coda::as.mcmc(res$samples[w, , ])
+    })
     res <- list(samples = coda::as.mcmc.list(ll), log.p = res$log.p)
   }
 

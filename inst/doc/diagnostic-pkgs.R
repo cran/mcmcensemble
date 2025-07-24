@@ -37,7 +37,7 @@ class(res$samples)
 summary(res$samples)
 
 ## ----eval = identical(Sys.getenv("IN_PKGDOWN"), "true")-----------------------
-#  plot(res$samples)
+# plot(res$samples)
 
 ## -----------------------------------------------------------------------------
 effectiveSize(res$samples)
@@ -74,6 +74,12 @@ mcmc_scatter(res_coda$samples)
 mcmc_trace(res_coda$samples)
 
 ## -----------------------------------------------------------------------------
-mcmc_dens(res_coda$samples) + 
-  overlay_function(fun = "dunif", geom = "density", color = "red", fill = "darkred", alpha = 0.5)
+mcmc_dens(res_coda$samples) +
+  overlay_function(
+    fun = "dunif",
+    geom = "density",
+    color = "red",
+    fill = "darkred",
+    alpha = 0.5
+  )
 

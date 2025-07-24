@@ -23,8 +23,9 @@ walkers. Each column is a variable to estimate and each row is a walker}
 
 \item{max.iter}{maximum number of function evaluations}
 
-\item{n.walkers}{number of walkers (ensemble size). An integer greater or
-equal than 2.}
+\item{n.walkers}{number of walkers (ensemble size). An integer greater than
+\code{max(3, d+1)} for stretch move and greater than \code{max(4, d+2)} for
+differential evolution where \code{d == ncol(inits)}.}
 
 \item{method}{method for proposal generation, either \code{"stretch"}, or
 \code{"differential.evolution"}. This argument will be saved as an attribute
@@ -79,7 +80,7 @@ unif_inits <- data.frame(
 
 ## use stretch move
 res1 <- MCMCEnsemble(p.log, inits = unif_inits,
-                     max.iter = 300, n.walkers = n_walkers,
+                     max.iter = 150, n.walkers = n_walkers,
                      method = "stretch")
 
 attr(res1, "ensemble.sampler")
@@ -89,7 +90,7 @@ str(res1)
 
 ## use stretch move, return samples as 'coda' object
 res2 <- MCMCEnsemble(p.log, inits = unif_inits,
-                     max.iter = 300, n.walkers = n_walkers,
+                     max.iter = 150, n.walkers = n_walkers,
                      method = "stretch", coda = TRUE)
 
 attr(res2, "ensemble.sampler")
@@ -100,7 +101,7 @@ plot(res2$samples)
 
 ## use different evolution move, return samples as 'coda' object
 res3 <- MCMCEnsemble(p.log, inits = unif_inits,
-                     max.iter = 300, n.walkers = n_walkers,
+                     max.iter = 150, n.walkers = n_walkers,
                      method = "differential.evolution", coda = TRUE)
 
 attr(res3, "ensemble.sampler")
